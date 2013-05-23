@@ -324,7 +324,7 @@ class MEGA {
   /**
    * Request file info from link.
    *
-   * @see node_public_file_info()
+   * @see public_file_info()
    */
   public function public_file_info_from_link($link, $dl_url = FALSE) {
     $file = self::parse_link($link);
@@ -364,7 +364,7 @@ class MEGA {
    */
   public function public_file_save($ph, $key, $dir_path = NULL, $filename = NULL) {
     // Requests a temporary download URL for a file node.
-    $info = $this->node_public_file_info($ph, $key, TRUE);
+    $info = $this->public_file_info($ph, $key, TRUE);
     if (!$info || empty($info['g'])) {
       return FALSE;
     }
@@ -390,7 +390,7 @@ class MEGA {
    *
    * This operation not require authentication.
    *
-   * @see node_public_file_save()
+   * @see public_file_save()
    */
   public function public_file_save_from_link($link, $dir_path = NULL, $filename = NULL) {
     $file = self::parse_link($link);
@@ -569,7 +569,7 @@ class MEGA {
    * Download a file node from requested temporary download URL.
    *
    * @param array $info
-   *   The file info returned by node_file_info() or node_public_file_info(),
+   *   The file info returned by node_file_info() or public_file_info(),
    *   with requested temporary download URL.
    * @param resource $stream
    *   Stream resource.

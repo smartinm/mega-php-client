@@ -159,7 +159,7 @@ store_session($session);
 $session = get_session();
 
 // Create client from previous session
-$mega = MEGAClient::create_from_session($session);
+$mega = MEGA::create_from_session($session);
 
 // ...
 ```
