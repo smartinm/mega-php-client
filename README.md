@@ -55,7 +55,7 @@ $file_info = $mega->public_file_info($ph, $key);
 var_dump($file_info);
 
 // Print filename and size
-echo 'Filename: ' . $file_info['n'];
+echo 'Filename: ' . $file_info['at']['n'];
 echo 'Size: ' . $file_info['s'];
 ```
 
