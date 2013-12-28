@@ -1,0 +1,24 @@
+{
+    "name": "smartinm/mega-php-client",
+    "description": "MEGA API Client Library for PHP.",
+    "type": "library",
+    "keywords": [ "mega", "api", "client", "mega.co.nz" ],
+    "homepage": "https://github.com/smartinm/mega-php-client",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sergio Martin Morillas",
+            "email": "smartinmorillas@gmail.com",
+            "homepage": "https://twitter.com/smartinm"
+        }
+    ],
+    "require": {
+      "php": ">=5.2.0",
+      "ext-mcrypt": "*",
+      "lib-openssl": "*",
+      "lib-curl": "*"
+    },
+    "autoload": {
+        "classmap": ["lib/"]
+    }
+}
