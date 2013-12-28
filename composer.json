@@ -15,8 +15,8 @@
     "require": {
       "php": ">=5.2.0",
       "ext-mcrypt": "*",
-      "lib-openssl": "*",
-      "lib-curl": "*"
+      "ext-openssl": "*",
+      "ext-curl": "*"
     },
     "autoload": {
         "classmap": ["lib/"]
