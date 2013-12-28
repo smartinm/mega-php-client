@@ -170,3 +170,5 @@ Credits
 * This library has been written by Sergio Martín ([@smartinm](http://twitter.com/smartinm)) as a port of official MEGA Javascript code.
 
 * Part of the code is based on the work done by [Julien Marchand](http://julien-marchand.fr/).
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/smartinm/mega-php-client/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
