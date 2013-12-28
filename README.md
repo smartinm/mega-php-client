@@ -171,4 +171,6 @@ Credits
 
 * Part of the code is based on the work done by [Julien Marchand](http://julien-marchand.fr/).
 
+* This projected is licensed under the terms of the MIT license.
+
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/smartinm/mega-php-client/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
