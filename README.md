@@ -138,25 +138,25 @@ print_r($file_info);
 User session
 ------------
 
-### Store session
+### Saving session
 
 ```php
 $mega = MEGA::create_from_user($email, $password);
 
 // ...
 
-// Get current session (as a base64 string)
-$session = $mega->session_save();
+// Get current session as a base64 string
+$session = MEGA::session_save($mega);
 
 // Store in a safe place!
-store_session($session);
+db_store_session($session);
 ```
 
 ### Restoring session
 
 ```php
 // Retrive saved session
-$session = get_session();
+$session = db_get_session();
 
 // Create client from previous session
 $mega = MEGA::create_from_session($session);

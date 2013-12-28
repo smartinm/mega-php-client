@@ -94,6 +94,22 @@ class MEGA {
   }
 
   /**
+   * Save current session as a base64 string.
+   *
+   * @param MEGA $client
+   * @return string
+   *
+   * @see MEGA::create_from_session()
+   */
+  public static function session_save($client) {
+    return chunk_split(base64_encode(serialize(array(
+      'u_k' => $client->u_k,
+      'u_sid' => $client->u_sid,
+      'u_privk' => $client->u_privk,
+    ))));
+  }
+
+  /**
    * Default constructor.
    *
    * @param bool $use_ssl
@@ -105,19 +121,6 @@ class MEGA {
     $this->apipath = isset($apipath) ? $apipath : 'https://' . self::$server . '/';
     $this->use_ssl = (bool) $use_ssl;
     $this->seqno = rand(0, PHP_INT_MAX);
-  }
-
-  /**
-   * Save current session.
-   *
-   * @return string
-   */
-  public function session_save() {
-    return chunk_split(base64_encode(serialize(array(
-      'u_k' => $client->u_k,
-      'u_sid' => $client->u_sid,
-      'u_privk' => $client->u_privk,
-    ))));
   }
 
   /**
