@@ -127,174 +127,6 @@ class MEGA {
   }
 
   /**
-   * Retrieve folder or user nodes.
-   *
-   * Returns the contents of the requested folder, or a full view of the
-   * requesting user's three filesystem trees, contact list, incoming shares
-   * and pending share key requests.
-   *
-   * @param string $handle
-   *   (optional) The public file or user node handle.
-   *
-   * @return array
-   */
-  public function node_list($handle = NULL, $args = array()) {
-    $req = array('a' => 'f') + $args;
-    $req += array('c' => 1);
-    if ($handle) {
-      $req += array('n' => $handle);
-    }
-
-    $res = $this->api_req(array($req));
-    if (!$res) {
-      return FALSE;
-    }
-
-    $res = array_shift($res);
-    if (isset($res['f'])) {
-
-      $nodes = &$res['f'];
-      foreach ($nodes as $index => $node) {
-        if ($node['t'] == 0 || $node['t'] == 1) {
-          if (!empty($node['k'])) {
-            if ($key = $this->node_decrypt_key($node['k'])) {
-              $attr = MEGAUtil::base64_to_str($node['a']);
-              $nodes[$index]['a'] = MEGACrypto::dec_attr($attr, $key);
-            }
-          }
-        }
-      }
-    }
-    return $res;
-  }
-
-  /**
-   * Request file info.
-   *
-   * @param array $node
-   *   The file node handle.
-   * @param boolean $dl_url
-   *   (optional) Set to TRUE to request a temporary download URL for the file.
-   * @param array $args
-   *   (optional) Set extra API command arguments.
-   *
-   * @return array
-   *   An array of file information having the following entries:
-   *   - s: File size (bytes).
-   *   - at: An array of file attributes having the following entries:
-   *     - n: File name.
-   *   - g: Temporary download URL.
-   */
-  public function node_file_info($node, $dl_url = FALSE, $args = array()) {
-    if (empty($node['h']) || empty($node['k'])) {
-      throw new InvalidArgumentException('Invalid file node handle');
-    }
-
-    $req = array('a' => 'g') + $args;
-    $req += array('n' => $node['h'], 'g' => (int) $dl_url, 'ssl' => (int) $this->use_ssl);
-
-    $res = $this->api_req(array($req));
-    if (!$res || !is_array($res)) {
-      return FALSE;
-    }
-
-    $res = array_shift($res);
-    if (isset($res['at'])) {
-      if ($key = $this->node_decrypt_key($node['k'])) {
-        $attr = MEGAUtil::base64_to_str($res['at']);
-        $res['at'] = MEGACrypto::dec_attr($attr, $key);
-      }
-    }
-    return $res;
-  }
-
-  /**
-   * Download file.
-   *
-   * @param array $node
-   *   The file node handle.
-   * @param resource $dest
-   *   (optional) The destination stream.
-   *
-   * @return int|string
-   *   Returns the number of bytes written in destination stream. If $dest is
-   *   NULL, returns the file node content in a string.
-   */
-  public function node_file_download($node, $dest = NULL) {
-    // Requests a temporary download URL of the file node.
-    $info = $this->node_file_info($node, TRUE);
-    if (!$info || empty($info['g'])) {
-      return FALSE;
-    }
-
-    $key = $this->node_decrypt_key($node['k']);
-    if (!$key) {
-      return FALSE;
-    }
-
-    if (is_null($dest)) {
-      $handle = fopen('php://memory', 'wb');
-    }
-    else {
-      $handle = $dest;
-    }
-
-    $ret = $this->file_download_url($info['g'], $info['s'], $key, $handle);
-
-    if (is_null($dest)) {
-    	rewind($handle);
-      $content = stream_get_contents($handle);
-      fclose($handle);
-      return $content;
-    }
-
-    return $ret;
-  }
-
-  /**
-   * Download and save file to disk.
-   *
-   * @param array $node
-   *   The file node handle.
-   * @param string $dir_path
-   *   (optional) Target directory.
-   * @param string $filename
-   *   (optional) File name.
-   * @param array $args
-   *
-   * @return string
-   *   The full path of saved file.
-   */
-  public function node_file_save($node, $dir_path = NULL, $filename = NULL, $args = array()) {
-    // Requests a temporary download URL of the file node.
-    $info = $this->node_file_info($node, TRUE, $args);
-    if (!$info || empty($info['g'])) {
-      return FALSE;
-    }
-
-    $key = $this->node_decrypt_key($node['k']);
-    if (!$key) {
-      return FALSE;
-    }
-
-    $path = !empty($dir_path) ? rtrim($dir_path, '/\\') . '/' : '';
-    $path .= !empty($filename) ? $filename : $info['at']['n'];
-
-    $stream = fopen($path, 'wb');
-    try {
-      $this->log("Downloading {$info['at']['n']} (size: {$info['s']}), url = {$info['g']}");
-      $this->file_download_url($info['g'], $info['s'], $key, $stream);
-    }
-    catch (MEGAException $e) {
-      fclose($stream);
-      throw $e;
-    }
-    fclose($stream);
-
-    return $path;
-  }
-
-  /**
    * Request file info.
    *
    * This operation not require authentication.
@@ -474,6 +306,174 @@ class MEGA {
       throw new InvalidArgumentException('Private key not found');
     }
     return $this->public_file_save($file['ph'], $file['key'], $dir_path, $filename);
+  }
+
+  /**
+   * Retrieve folder or user nodes.
+   *
+   * Returns the contents of the requested folder, or a full view of the
+   * requesting user's three filesystem trees, contact list, incoming shares
+   * and pending share key requests.
+   *
+   * @param string $handle
+   *   (optional) The public file or user node handle.
+   *
+   * @return array
+   */
+  public function node_list($handle = NULL, $args = array()) {
+    $req = array('a' => 'f') + $args;
+    $req += array('c' => 1);
+    if ($handle) {
+      $req += array('n' => $handle);
+    }
+
+    $res = $this->api_req(array($req));
+    if (!$res) {
+      return FALSE;
+    }
+
+    $res = array_shift($res);
+    if (isset($res['f'])) {
+
+      $nodes = &$res['f'];
+      foreach ($nodes as $index => $node) {
+        if ($node['t'] == 0 || $node['t'] == 1) {
+          if (!empty($node['k'])) {
+            if ($key = $this->node_decrypt_key($node['k'])) {
+              $attr = MEGAUtil::base64_to_str($node['a']);
+              $nodes[$index]['a'] = MEGACrypto::dec_attr($attr, $key);
+            }
+          }
+        }
+      }
+    }
+    return $res;
+  }
+
+  /**
+   * Request file info.
+   *
+   * @param array $node
+   *   The file node handle.
+   * @param boolean $dl_url
+   *   (optional) Set to TRUE to request a temporary download URL for the file.
+   * @param array $args
+   *   (optional) Set extra API command arguments.
+   *
+   * @return array
+   *   An array of file information having the following entries:
+   *   - s: File size (bytes).
+   *   - at: An array of file attributes having the following entries:
+   *     - n: File name.
+   *   - g: Temporary download URL.
+   */
+  public function node_file_info($node, $dl_url = FALSE, $args = array()) {
+    if (empty($node['h']) || empty($node['k'])) {
+      throw new InvalidArgumentException('Invalid file node handle');
+    }
+
+    $req = array('a' => 'g') + $args;
+    $req += array('n' => $node['h'], 'g' => (int) $dl_url, 'ssl' => (int) $this->use_ssl);
+
+    $res = $this->api_req(array($req));
+    if (!$res || !is_array($res)) {
+      return FALSE;
+    }
+
+    $res = array_shift($res);
+    if (isset($res['at'])) {
+      if ($key = $this->node_decrypt_key($node['k'])) {
+        $attr = MEGAUtil::base64_to_str($res['at']);
+        $res['at'] = MEGACrypto::dec_attr($attr, $key);
+      }
+    }
+    return $res;
+  }
+
+  /**
+   * Download file.
+   *
+   * @param array $node
+   *   The file node handle.
+   * @param resource $dest
+   *   (optional) The destination stream.
+   *
+   * @return int|string
+   *   Returns the number of bytes written in destination stream. If $dest is
+   *   NULL, returns the file node content in a string.
+   */
+  public function node_file_download($node, $dest = NULL) {
+    // Requests a temporary download URL of the file node.
+    $info = $this->node_file_info($node, TRUE);
+    if (!$info || empty($info['g'])) {
+      return FALSE;
+    }
+
+    $key = $this->node_decrypt_key($node['k']);
+    if (!$key) {
+      return FALSE;
+    }
+
+    if (is_null($dest)) {
+      $handle = fopen('php://memory', 'wb');
+    }
+    else {
+      $handle = $dest;
+    }
+
+    $ret = $this->file_download_url($info['g'], $info['s'], $key, $handle);
+
+    if (is_null($dest)) {
+    	rewind($handle);
+      $content = stream_get_contents($handle);
+      fclose($handle);
+      return $content;
+    }
+
+    return $ret;
+  }
+
+  /**
+   * Download and save file to disk.
+   *
+   * @param array $node
+   *   The file node handle.
+   * @param string $dir_path
+   *   (optional) Target directory.
+   * @param string $filename
+   *   (optional) File name.
+   * @param array $args
+   *
+   * @return string
+   *   The full path of saved file.
+   */
+  public function node_file_save($node, $dir_path = NULL, $filename = NULL, $args = array()) {
+    // Requests a temporary download URL of the file node.
+    $info = $this->node_file_info($node, TRUE, $args);
+    if (!$info || empty($info['g'])) {
+      return FALSE;
+    }
+
+    $key = $this->node_decrypt_key($node['k']);
+    if (!$key) {
+      return FALSE;
+    }
+
+    $path = !empty($dir_path) ? rtrim($dir_path, '/\\') . '/' : '';
+    $path .= !empty($filename) ? $filename : $info['at']['n'];
+
+    $stream = fopen($path, 'wb');
+    try {
+      $this->log("Downloading {$info['at']['n']} (size: {$info['s']}), url = {$info['g']}");
+      $this->file_download_url($info['g'], $info['s'], $key, $stream);
+    }
+    catch (MEGAException $e) {
+      fclose($stream);
+      throw $e;
+    }
+    fclose($stream);
+
+    return $path;
   }
 
   /**

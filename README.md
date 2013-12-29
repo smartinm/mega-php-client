@@ -5,6 +5,33 @@ PHP client library for the [MEGA API](https://mega.co.nz/#developers).
 
 *Note: This library is still under development and incomplete, so the API is subject to change.*
 
+Status
+------
+
+### Operations that don't require user authentication
+
+| Method | Description | Status |
+| ------ | ----------- | ------ |
+| `public_file_info` / `public_file_info_from_link` | Request public file info | Implemented |
+| `public_file_download` / `public_file_download_from_link` | Download public file | Implemented |
+| `public_file_save` / `public_file_save_from_link` |  Download and save public file to disk | Implemented |
+
+### Operations that require user authentication
+
+| Method | Description | Status |
+| ------ | ----------- | ------ |
+| `user_login_session`| Establishes a user session | Implemented |
+| `node_list`| Retrieve folder or user nodes | Implemented |
+| `node_file_info` | Request file node info | Implemented |
+| `node_file_download` | Download a file node | Implemented |
+| `node_file_save` |  Download and save a file node to disk | Implemented |
+| `node_add`| Add/copy nodes | Not implemented |
+| `node_delete`| Delete node | Not implemented |
+| `node_move`| Move node | Not implemented |
+| `node_update`| Set node attributes | Not implemented |
+| `node_publish` / `node_unpublish`| Create/delete public handle | Not implemented |
+| `node_share`| Create/modify/delete outgoing share | Not implemented |
+
 Requirements
 ------------
 
@@ -94,7 +121,7 @@ Downloading files
 ```php
 // Write to file
 $fp = fopen($file, 'wb');
-$content = $mega->public_file_download($ph, $key, $fp);
+$size = $mega->public_file_download($ph, $key, $fp);
 fclose($fp);
 ```
 
