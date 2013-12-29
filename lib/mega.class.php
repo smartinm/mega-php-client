@@ -132,6 +132,8 @@ class MEGA {
    *
    * @param string $handle
    *   (optional) The public file or user node handle.
+   *
+   * @return array
    */
   public function node_list($handle = NULL, $args = array()) {
     $req = array('a' => 'f') + $args;
@@ -207,10 +209,13 @@ class MEGA {
    * Download file.
    *
    * @param array $node
+   *   The file node handle.
    * @param resource $dest
    *   (optional) The destination stream.
    *
-   * @return
+   * @return int|string
+   *   Returns the number of bytes written in destination stream. If $dest is
+   *   NULL, returns the file node content in a string.
    */
   public function node_file_download($node, $dest = NULL) {
     // Requests a temporary download URL for a file node.
@@ -305,6 +310,8 @@ class MEGA {
    *   - at: An array of file attributes having the following entries:
    *     - n: File name.
    *   - g: Temporary download URL.
+   *
+   * @see public_file_info_from_link()
    */
   public function public_file_info($ph, $key, $dl_url = FALSE, $args = array()) {
     $req = array('a' => 'g') + $args;
@@ -340,14 +347,6 @@ class MEGA {
     return $this->public_file_info($file['ph'], $file['key'], $dl_url);
   }
 
-  /**
-   *
-   * @param unknown $ph
-   * @param unknown $key
-   * @param string $dir_path
-   * @param string $filename
-   * @param unknown $args
-   */
   public function public_file_download($ph, $key, $dest = NULL) {
   }
 
@@ -355,15 +354,23 @@ class MEGA {
   }
 
   /**
+   * Download and save a public file to disk.
    *
    * This operation not require authentication.
    *
    * @param string $ph
+   *   The public file node handle.
    * @param string $key
+   *   The file node key.
    * @param string $dir_path
+   *   (optional) Target directory.
    * @param string $filename
-   * @param array $args
-   * @return boolean|string
+   *   (optional) File name.
+   *
+   * @return string
+   *   The full path of saved file.
+   *
+   * @see public_file_save_from_link()
    */
   public function public_file_save($ph, $key, $dir_path = NULL, $filename = NULL) {
     // Requests a temporary download URL for a file node.
@@ -390,6 +397,7 @@ class MEGA {
   }
 
   /**
+   * Download and save a public file to disk from link.
    *
    * This operation not require authentication.
    *
@@ -579,11 +587,8 @@ class MEGA {
    * @param string $key
    *   The file node key.
    *
-   * @return array
-   *   An array of file information having the following entries:
-   *   - s: File size (bytes).
-   *   - at: An array of file attributes having the following entries:
-   *     - n: File name.
+   * @return int
+   *   Returns the number of bytes written in destination stream.
    *
    * @todo Add range support
    * @todo Add integrity check
