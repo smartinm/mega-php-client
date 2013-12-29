@@ -14,6 +14,9 @@ class MEGA {
   /* Europe MEGA API server endpoint. */
   const SERVER_EUROPE = 'eu.api.mega.co.nz';
 
+  /* Enable debug message output. */
+	const DEBUG = true;
+
   /* Default server endpoint. */
   private static $server = MEGA::SERVER_GLOBAL;
 
@@ -778,7 +781,9 @@ class MEGA {
   }
 
   protected function log($message) {
-    echo "[DEBUG] MEGA::$message\n";
+  	if (self::DEBUG) {
+    	echo "[DEBUG] MEGA::$message\n";
+  	}
   }
 
   /**
