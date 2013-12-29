@@ -221,7 +221,7 @@ class MEGA {
    *   NULL, returns the file node content in a string.
    */
   public function node_file_download($node, $dest = NULL) {
-    // Requests a temporary download URL for a file node.
+    // Requests a temporary download URL of the file node.
     $info = $this->node_file_info($node, TRUE);
     if (!$info || empty($info['g'])) {
       return FALSE;
@@ -242,6 +242,7 @@ class MEGA {
     $ret = $this->file_download_url($info['g'], $info['s'], $key, $handle);
 
     if (is_null($dest)) {
+    	rewind($handle);
       $content = stream_get_contents($handle);
       fclose($handle);
       return $content;
@@ -265,7 +266,7 @@ class MEGA {
    *   The full path of saved file.
    */
   public function node_file_save($node, $dir_path = NULL, $filename = NULL, $args = array()) {
-    // Requests a temporary download URL for a file node.
+    // Requests a temporary download URL of the file node.
     $info = $this->node_file_info($node, TRUE, $args);
     if (!$info || empty($info['g'])) {
       return FALSE;
@@ -337,6 +338,8 @@ class MEGA {
   /**
    * Request file info from link.
    *
+   * This operation not require authentication.
+   *
    * @see public_file_info()
    */
   public function public_file_info_from_link($link, $dl_url = FALSE) {
@@ -350,10 +353,66 @@ class MEGA {
     return $this->public_file_info($file['ph'], $file['key'], $dl_url);
   }
 
+  /**
+   * Download a public file.
+   *
+   * This operation not require authentication.
+   *
+   * @param string $ph
+   *   The public file node handle.
+   * @param string $key
+   *   The file node key.
+   * @param resource $dest
+   *   (optional) The destination stream.
+   *
+   * @return int|string
+   *   Returns the number of bytes written in destination stream. If $dest is
+   *   NULL, returns the file node content in a string.
+   *
+   * @see public_file_download_from_link()
+   */
   public function public_file_download($ph, $key, $dest = NULL) {
+    // Requests a temporary download URL of the public file.
+    $info = $this->public_file_info($ph, $key, TRUE);
+    if (!$info || empty($info['g'])) {
+      return FALSE;
+    }
+
+    if (is_null($dest)) {
+      $handle = fopen('php://memory', 'wb');
+    }
+    else {
+      $handle = $dest;
+    }
+
+    $ret = $this->file_download_url($info['g'], $info['s'], MEGAUtil::base64_to_a32($key), $handle);
+
+    if (is_null($dest)) {
+    	rewind($handle);
+      $content = stream_get_contents($handle);
+      fclose($handle);
+      return $content;
+    }
+
+    return $ret;
   }
 
+  /**
+   * Download a public file from link.
+   *
+   * This operation not require authentication.
+   *
+   * @see public_file_download()
+   */
   public function public_file_download_from_link($link, $dest = NULL) {
+    $file = self::parse_link($link);
+    if (empty($file['ph'])) {
+      throw new InvalidArgumentException('Public handle not found');
+    }
+    if (empty($file['key'])) {
+      throw new InvalidArgumentException('Private key not found');
+    }
+    return $this->public_file_download($file['ph'], $file['key'], $dest);
   }
 
   /**
@@ -376,7 +435,7 @@ class MEGA {
    * @see public_file_save_from_link()
    */
   public function public_file_save($ph, $key, $dir_path = NULL, $filename = NULL) {
-    // Requests a temporary download URL for a file node.
+    // Requests a temporary download URL of the public file.
     $info = $this->public_file_info($ph, $key, TRUE);
     if (!$info || empty($info['g'])) {
       return FALSE;
@@ -408,8 +467,11 @@ class MEGA {
    */
   public function public_file_save_from_link($link, $dir_path = NULL, $filename = NULL) {
     $file = self::parse_link($link);
-    if (!isset($file['ph']) || !isset($file['key'])) {
-      throw new Exception('Invalid link');
+    if (empty($file['ph'])) {
+      throw new InvalidArgumentException('Public handle not found');
+    }
+    if (empty($file['key'])) {
+      throw new InvalidArgumentException('Private key not found');
     }
     return $this->public_file_save($file['ph'], $file['key'], $dir_path, $filename);
   }
