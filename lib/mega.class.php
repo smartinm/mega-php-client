@@ -106,9 +106,9 @@ class MEGA {
    */
   public static function session_save($client) {
     return chunk_split(base64_encode(serialize(array(
-      'u_k' => $client->u_k,
-      'u_sid' => $client->u_sid,
-      'u_privk' => $client->u_privk,
+      'u_k' => $client[0],
+      'u_sid' => $client[1],
+      'u_privk' => $client[2],
     ))));
   }
 
